@@ -1,0 +1,21 @@
+# Dependencies
+node_modules/
+
+# Secrets — never commit
+.env
+.env.*
+*.key
+*.pem
+
+# Build / editor noise
+dist/
+*.log
+.DS_Store
+.idea/
+.vscode/
+
+# Run output (traces are written here at runtime; fixtures are NOT ignored — see below)
+runs/
+
+# NOTE: fixtures/llm/ is intentionally committed — it is what makes the test
+# suite run offline and deterministically with no API key. Do not ignore it.

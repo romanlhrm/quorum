@@ -1,0 +1,25 @@
+{
+  "name": "quorum",
+  "version": "0.1.0",
+  "description": "A multi-agent code-review engine: a planner decomposes a diff into a typed DAG of review tasks, specialist reviewers run in parallel, and an isolated verifier independently checks every finding before it ships.",
+  "type": "module",
+  "license": "MIT",
+  "module": "src/cli/review.ts",
+  "scripts": {
+    "test": "bun test",
+    "typecheck": "tsc --noEmit",
+    "review": "bun src/cli/review.ts",
+    "eval": "bun src/cli/eval.ts"
+  },
+  "engines": {
+    "bun": ">=1.1.0"
+  },
+  "dependencies": {
+    "@anthropic-ai/sdk": "^0.104.2",
+    "zod": "^4.4.3"
+  },
+  "devDependencies": {
+    "@types/bun": "^1.3.14",
+    "typescript": "^6.0.3"
+  }
+}

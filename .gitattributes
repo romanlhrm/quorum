@@ -1,0 +1,4 @@
+# Normalize all text to LF in the repo and on checkout, on every platform.
+# Keeps committed replay fixtures and JSONL traces byte-stable so the
+# deterministic-replay tests pass from a fresh clone regardless of OS.
+* text=auto eol=lf

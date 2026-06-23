@@ -1,0 +1,23 @@
+name: ci
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+# No secrets are configured for this workflow. The test suite runs entirely from
+# committed replay fixtures with NO ANTHROPIC_API_KEY — a replay miss throws, so
+# a green run on this fresh checkout proves the project is offline-deterministic.
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: latest
+      - run: bun install --frozen-lockfile
+      - name: Typecheck (strict)
+        run: bunx tsc --noEmit
+      - name: Test (offline — no API key)
+        run: bun test
