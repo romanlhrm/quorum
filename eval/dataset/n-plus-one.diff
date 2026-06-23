@@ -1,0 +1,7 @@
+diff --git a/orders.ts b/orders.ts
+--- a/orders.ts
++++ b/orders.ts
+@@ -1,1 +1,3 @@
+ async function enrich(orders) {
++  const out = [];
++  for (const o of orders) out.push(await db.findUser(o.userId));

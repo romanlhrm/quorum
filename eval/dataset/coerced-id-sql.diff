@@ -1,0 +1,9 @@
+diff --git a/lookup.ts b/lookup.ts
+--- a/lookup.ts
++++ b/lookup.ts
+@@ -1,1 +1,4 @@
+ class Lookup {
++  byId(id) {
++    const safeId = Number(id);
++    return this.db.raw("SELECT * FROM users WHERE id = " + safeId);
++  }

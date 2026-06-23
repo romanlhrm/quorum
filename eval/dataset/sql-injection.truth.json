@@ -1,0 +1,15 @@
+{
+  "kind": "defect",
+  "defects": [
+    {
+      "defectId": "si1",
+      "file": "repo.ts",
+      "lineStart": 2,
+      "lineEnd": 2,
+      "type": "sql-injection",
+      "concern": "security",
+      "severity": "critical",
+      "note": "name concatenated into SQL"
+    }
+  ]
+}

@@ -1,0 +1,15 @@
+{
+  "kind": "defect",
+  "defects": [
+    {
+      "defectId": "np1",
+      "file": "orders.ts",
+      "lineStart": 3,
+      "lineEnd": 3,
+      "type": "n-plus-one",
+      "concern": "performance",
+      "severity": "high",
+      "note": "DB call per order"
+    }
+  ]
+}

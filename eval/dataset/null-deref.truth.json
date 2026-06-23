@@ -1,0 +1,15 @@
+{
+  "kind": "defect",
+  "defects": [
+    {
+      "defectId": "nd1",
+      "file": "checkout.ts",
+      "lineStart": 3,
+      "lineEnd": 3,
+      "type": "null-deref",
+      "concern": "correctness",
+      "severity": "high",
+      "note": "findCoupon may return undefined"
+    }
+  ]
+}

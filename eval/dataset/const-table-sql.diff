@@ -1,0 +1,9 @@
+diff --git a/reports.ts b/reports.ts
+--- a/reports.ts
++++ b/reports.ts
+@@ -1,1 +1,4 @@
+ class Reports {
++  all() {
++    const table = "users";
++    return this.db.raw("SELECT * FROM " + table);
++  }

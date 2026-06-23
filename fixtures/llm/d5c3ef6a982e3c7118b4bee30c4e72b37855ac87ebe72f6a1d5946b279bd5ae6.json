@@ -1,0 +1,69 @@
+{
+  "request": {
+    "model": "claude-opus-4-8",
+    "effort": "high",
+    "maxTokens": 4096,
+    "system": "You are the planner in a multi-agent code review. For each changed hunk you decide WHICH review concerns genuinely warrant a specialist pass. The concerns are: correctness, security, performance, maintainability. Be selective — do NOT default to all four. A pure-formatting hunk may need none; a hunk touching auth needs security; a tight loop needs performance. Choosing well is the point.",
+    "user": "### file=\"repo.ts\" hunkIndex=0\nFile: repo.ts\nHunk: @@ -1,1 +1,2 @@\nLines show NEW-file line numbers; + added, - removed, space unchanged.\n   1   class Repo {\n   2 +   find(name) { return this.db.raw(\"SELECT * FROM t WHERE name = '\" + name + \"'\"); }\n\nFor each hunk above, return the concerns that genuinely warrant review and a one-line reason. Reference `file` and `hunkIndex` exactly as shown. Omit a hunk entirely if no concern applies.",
+    "schemaJson": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "type": "object",
+      "properties": {
+        "items": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "file": {
+                "type": "string"
+              },
+              "hunkIndex": {
+                "type": "integer",
+                "minimum": 0,
+                "maximum": 9007199254740991
+              },
+              "concerns": {
+                "minItems": 1,
+                "type": "array",
+                "items": {
+                  "type": "string",
+                  "enum": [
+                    "correctness",
+                    "security",
+                    "performance",
+                    "maintainability"
+                  ]
+                }
+              },
+              "reason": {
+                "type": "string"
+              }
+            },
+            "required": [
+              "file",
+              "hunkIndex",
+              "concerns",
+              "reason"
+            ],
+            "additionalProperties": false
+          }
+        }
+      },
+      "required": [
+        "items"
+      ],
+      "additionalProperties": false
+    }
+  },
+  "response": {
+    "raw": "{\"items\":[{\"file\":\"repo.ts\",\"hunkIndex\":0,\"concerns\":[\"security\"],\"reason\":\"Builds SQL by string-concatenating untrusted `name`, a classic SQL injection vector.\"}]}",
+    "usage": {
+      "inputTokens": 2494,
+      "outputTokens": 102
+    },
+    "model": "claude-opus-4-8",
+    "stopReason": "end_turn",
+    "latencyMs": 5228,
+    "recordedAt": "2026-06-18T19:48:59.150Z"
+  }
+}

@@ -1,0 +1,89 @@
+{
+  "request": {
+    "model": "claude-sonnet-4-6",
+    "effort": "medium",
+    "maxTokens": 4096,
+    "system": "You are a senior code reviewer specialising in maintainability. Focus on changes that will cost future readers: unclear names, duplicated logic, dead code, tangled control flow, missing or wrong types, magic numbers, and functions doing too much. These are usually low/medium unless they actively invite bugs.\n\nReport ONLY maintainability issues, and only ones actually present in the changed lines of the hunk you are given. Cite NEW-file line numbers. If there are none, return an empty list — do not invent issues to seem thorough. Set confidence honestly: how sure are you this is a real issue?",
+    "user": "File: reports.ts\nHunk: @@ -1,1 +1,4 @@\nLines show NEW-file line numbers; + added, - removed, space unchanged.\n   1   class Reports {\n   2 +   all() {\n   3 +     const table = \"users\";\n   4 +     return this.db.raw(\"SELECT * FROM \" + table);\n   5 +   }\n\nReport maintainability issues in the changed lines above.",
+    "schemaJson": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "type": "object",
+      "properties": {
+        "findings": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "lineStart": {
+                "type": "integer",
+                "minimum": 1,
+                "maximum": 9007199254740991
+              },
+              "lineEnd": {
+                "type": "integer",
+                "minimum": 1,
+                "maximum": 9007199254740991
+              },
+              "severity": {
+                "type": "string",
+                "enum": [
+                  "critical",
+                  "high",
+                  "medium",
+                  "low",
+                  "info"
+                ]
+              },
+              "title": {
+                "type": "string"
+              },
+              "rationale": {
+                "type": "string"
+              },
+              "suggestedFix": {
+                "anyOf": [
+                  {
+                    "type": "string"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ]
+              },
+              "confidence": {
+                "type": "number",
+                "minimum": 0,
+                "maximum": 1
+              }
+            },
+            "required": [
+              "lineStart",
+              "lineEnd",
+              "severity",
+              "title",
+              "rationale",
+              "suggestedFix",
+              "confidence"
+            ],
+            "additionalProperties": false
+          }
+        }
+      },
+      "required": [
+        "findings"
+      ],
+      "additionalProperties": false
+    }
+  },
+  "response": {
+    "raw": "{\"findings\":[{\"lineStart\":3,\"lineEnd\":3,\"severity\":\"low\",\"title\":\"Redundant intermediate variable `table`\",\"rationale\":\"The variable `table` is assigned a string literal and used exactly once on the next line. It adds no clarity and obscures that the table name is a hardcoded constant. Future readers may wonder whether `table` is ever varied or reassigned.\",\"suggestedFix\":\"Remove the variable and inline the string, or if the intent is to make the table name a named constant, declare it as a class-level or module-level constant: `private static readonly TABLE = 'users';`\",\"confidence\":0.85},{\"lineStart\":4,\"lineEnd\":4,\"severity\":\"high\",\"title\":\"String concatenation in raw SQL query is an SQL-injection footgun\",\"rationale\":\"Even though `table` is currently a literal, the pattern `db.raw('SELECT * FROM ' + table)` teaches readers and future contributors that concatenation into raw queries is acceptable. Any future change that makes `table` dynamic will silently introduce an injection vulnerability. The pattern itself is a maintainability hazard.\",\"suggestedFix\":\"Use a parameterised or escaped identifier binding if the driver supports it, or at minimum use a template with a clear comment that the value must never be user-controlled. Alternatively restrict to a whitelist check before interpolation.\",\"confidence\":0.9},{\"lineStart\":4,\"lineEnd\":4,\"severity\":\"medium\",\"title\":\"`SELECT *` makes the query's contract implicit and fragile\",\"rationale\":\"Selecting all columns means callers receive an undocumented, untyped set of fields. Any column added, removed, or renamed in the `users` table silently changes what `all()` returns, breaking callers in ways that are hard to detect statically.\",\"suggestedFix\":\"Enumerate the required columns explicitly: `SELECT id, name, email, … FROM users`.\",\"confidence\":0.8}]}",
+    "usage": {
+      "inputTokens": 3,
+      "outputTokens": 437
+    },
+    "model": "claude-sonnet-4-6",
+    "stopReason": "end_turn",
+    "latencyMs": 12988,
+    "recordedAt": "2026-06-18T19:47:48.947Z"
+  }
+}

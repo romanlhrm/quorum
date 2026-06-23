@@ -1,0 +1,17 @@
+diff --git a/src/users.ts b/src/users.ts
+index 1111111..2222222 100644
+--- a/src/users.ts
++++ b/src/users.ts
+@@ -7,5 +7,13 @@ export class UserService {
+   listIds(items: Item[]) {
+     return items.map((i) => i.id);
+   }
++  async findUser(id: string) {
++    const row = await this.db.raw("SELECT * FROM users WHERE id = '" + id + "'");
++    return row;
++  }
++  async primaryEmail(id: string) {
++    const user = await this.cache.get(id);
++    return user.profile.email;
++  }
+ }

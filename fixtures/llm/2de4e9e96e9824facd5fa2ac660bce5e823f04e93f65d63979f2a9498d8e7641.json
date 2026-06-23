@@ -1,0 +1,89 @@
+{
+  "request": {
+    "model": "claude-sonnet-4-6",
+    "effort": "medium",
+    "maxTokens": 4096,
+    "system": "You are a senior code reviewer specialising in security. Focus on exploitable weaknesses: injection (SQL/command/template), missing authentication/authorization checks, hardcoded secrets, unsafe deserialization, path traversal, SSRF, and unvalidated or untrusted input reaching a sink. Tie each finding to a concrete attack path. A reachable vulnerability is high/critical.\n\nReport ONLY security issues, and only ones actually present in the changed lines of the hunk you are given. Cite NEW-file line numbers. If there are none, return an empty list — do not invent issues to seem thorough. Set confidence honestly: how sure are you this is a real issue?",
+    "user": "File: reports.ts\nHunk: @@ -1,1 +1,4 @@\nLines show NEW-file line numbers; + added, - removed, space unchanged.\n   1   class Reports {\n   2 +   all() {\n   3 +     const table = \"users\";\n   4 +     return this.db.raw(\"SELECT * FROM \" + table);\n   5 +   }\n\nReport security issues in the changed lines above.",
+    "schemaJson": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "type": "object",
+      "properties": {
+        "findings": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "lineStart": {
+                "type": "integer",
+                "minimum": 1,
+                "maximum": 9007199254740991
+              },
+              "lineEnd": {
+                "type": "integer",
+                "minimum": 1,
+                "maximum": 9007199254740991
+              },
+              "severity": {
+                "type": "string",
+                "enum": [
+                  "critical",
+                  "high",
+                  "medium",
+                  "low",
+                  "info"
+                ]
+              },
+              "title": {
+                "type": "string"
+              },
+              "rationale": {
+                "type": "string"
+              },
+              "suggestedFix": {
+                "anyOf": [
+                  {
+                    "type": "string"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ]
+              },
+              "confidence": {
+                "type": "number",
+                "minimum": 0,
+                "maximum": 1
+              }
+            },
+            "required": [
+              "lineStart",
+              "lineEnd",
+              "severity",
+              "title",
+              "rationale",
+              "suggestedFix",
+              "confidence"
+            ],
+            "additionalProperties": false
+          }
+        }
+      },
+      "required": [
+        "findings"
+      ],
+      "additionalProperties": false
+    }
+  },
+  "response": {
+    "raw": "{\"findings\":[]}",
+    "usage": {
+      "inputTokens": 3,
+      "outputTokens": 8
+    },
+    "model": "claude-sonnet-4-6",
+    "stopReason": "end_turn",
+    "latencyMs": 4431,
+    "recordedAt": "2026-06-18T19:47:40.384Z"
+  }
+}

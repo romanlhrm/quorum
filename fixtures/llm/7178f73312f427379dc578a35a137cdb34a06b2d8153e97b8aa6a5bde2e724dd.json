@@ -1,0 +1,89 @@
+{
+  "request": {
+    "model": "claude-sonnet-4-6",
+    "effort": "medium",
+    "maxTokens": 4096,
+    "system": "You are a senior code reviewer specialising in security. Focus on exploitable weaknesses: injection (SQL/command/template), missing authentication/authorization checks, hardcoded secrets, unsafe deserialization, path traversal, SSRF, and unvalidated or untrusted input reaching a sink. Tie each finding to a concrete attack path. A reachable vulnerability is high/critical.\n\nReport ONLY security issues, and only ones actually present in the changed lines of the hunk you are given. Cite NEW-file line numbers. If there are none, return an empty list — do not invent issues to seem thorough. Set confidence honestly: how sure are you this is a real issue?",
+    "user": "File: src/users.ts\nHunk: @@ -7,5 +7,13 @@ export class UserService {\nLines show NEW-file line numbers; + added, - removed, space unchanged.\n   7     listIds(items: Item[]) {\n   8       return items.map((i) => i.id);\n   9     }\n  10 +   async findUser(id: string) {\n  11 +     const row = await this.db.raw(\"SELECT * FROM users WHERE id = '\" + id + \"'\");\n  12 +     return row;\n  13 +   }\n  14 +   async primaryEmail(id: string) {\n  15 +     const user = await this.cache.get(id);\n  16 +     return user.profile.email;\n  17 +   }\n  18   }\n\nReport security issues in the changed lines above.",
+    "schemaJson": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "type": "object",
+      "properties": {
+        "findings": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "lineStart": {
+                "type": "integer",
+                "minimum": 1,
+                "maximum": 9007199254740991
+              },
+              "lineEnd": {
+                "type": "integer",
+                "minimum": 1,
+                "maximum": 9007199254740991
+              },
+              "severity": {
+                "type": "string",
+                "enum": [
+                  "critical",
+                  "high",
+                  "medium",
+                  "low",
+                  "info"
+                ]
+              },
+              "title": {
+                "type": "string"
+              },
+              "rationale": {
+                "type": "string"
+              },
+              "suggestedFix": {
+                "anyOf": [
+                  {
+                    "type": "string"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ]
+              },
+              "confidence": {
+                "type": "number",
+                "minimum": 0,
+                "maximum": 1
+              }
+            },
+            "required": [
+              "lineStart",
+              "lineEnd",
+              "severity",
+              "title",
+              "rationale",
+              "suggestedFix",
+              "confidence"
+            ],
+            "additionalProperties": false
+          }
+        }
+      },
+      "required": [
+        "findings"
+      ],
+      "additionalProperties": false
+    }
+  },
+  "response": {
+    "raw": "{\"findings\":[{\"lineStart\":11,\"lineEnd\":11,\"severity\":\"critical\",\"title\":\"SQL Injection via string concatenation\",\"rationale\":\"The `id` parameter is concatenated directly into a raw SQL string without any sanitization or parameterization. An attacker who controls `id` can break out of the string literal — e.g. `' OR '1'='1` — to read arbitrary rows, or use `'; DROP TABLE users; --` for destructive operations. Because `findUser` is a public method accepting a caller-supplied string, this is trivially reachable.\",\"suggestedFix\":\"Use a parameterized query: `this.db.raw('SELECT * FROM users WHERE id = ?', [id])` (knex-style) or the equivalent prepared-statement API for the db driver in use.\",\"confidence\":0.99}]}",
+    "usage": {
+      "inputTokens": 3,
+      "outputTokens": 194
+    },
+    "model": "claude-sonnet-4-6",
+    "stopReason": "end_turn",
+    "latencyMs": 6587,
+    "recordedAt": "2026-06-18T19:45:49.823Z"
+  }
+}

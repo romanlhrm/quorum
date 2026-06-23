@@ -1,0 +1,47 @@
+{
+  "request": {
+    "model": "claude-opus-4-8",
+    "effort": "high",
+    "maxTokens": 2048,
+    "system": "You are an isolated, skeptical verifier. A reviewer has claimed a single finding about a single hunk. Your job is to try to REFUTE it: assume it may be wrong and look for why. Uphold it ONLY if the hunk itself clearly supports the claim. If the evidence is absent, speculative, or depends on code you cannot see, refute it. You see nothing but this one finding and this one hunk — no other findings, no wider context.",
+    "user": "A reviewer claims this correctness issue:\n  title: SQL injection via string concatenation\n  lines: 11-11 (new file)\n  rationale: The `id` parameter is interpolated directly into the SQL string with no escaping or parameterisation. Any caller-controlled value for `id` can break out of the string literal and execute arbitrary SQL, including data exfiltration or destructive statements.\n\nThe ONLY context you may use is this hunk:\nFile: src/users.ts\nHunk: @@ -7,5 +7,13 @@ export class UserService {\nLines show NEW-file line numbers; + added, - removed, space unchanged.\n   7     listIds(items: Item[]) {\n   8       return items.map((i) => i.id);\n   9     }\n  10 +   async findUser(id: string) {\n  11 +     const row = await this.db.raw(\"SELECT * FROM users WHERE id = '\" + id + \"'\");\n  12 +     return row;\n  13 +   }\n  14 +   async primaryEmail(id: string) {\n  15 +     const user = await this.cache.get(id);\n  16 +     return user.profile.email;\n  17 +   }\n  18   }\n\nIs the finding real and supported by THIS hunk? Try to refute it before agreeing. Report your outcome (upheld/refuted), your confidence, and your reasoning.",
+    "schemaJson": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "type": "object",
+      "properties": {
+        "outcome": {
+          "type": "string",
+          "enum": [
+            "upheld",
+            "refuted"
+          ]
+        },
+        "confidence": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 1
+        },
+        "reasoning": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "outcome",
+        "confidence",
+        "reasoning"
+      ],
+      "additionalProperties": false
+    }
+  },
+  "response": {
+    "raw": "{\"outcome\":\"upheld\",\"confidence\":0.97,\"reasoning\":\"Line 11 builds the SQL string via direct concatenation: \\\"SELECT * FROM users WHERE id = '\\\" + id + \\\"'\\\", with no parameterisation or escaping. db.raw executes raw SQL, so a caller-controlled `id` (typed string) can inject a single quote to break out of the literal and append arbitrary SQL. This is a textbook SQL injection visible entirely within the hunk; no external context is needed to confirm it.\"}",
+    "usage": {
+      "inputTokens": 2840,
+      "outputTokens": 176
+    },
+    "model": "claude-opus-4-8",
+    "stopReason": "end_turn",
+    "latencyMs": 5843,
+    "recordedAt": "2026-06-18T19:45:57.719Z"
+  }
+}

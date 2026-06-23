@@ -1,0 +1,6 @@
+diff --git a/repo.ts b/repo.ts
+--- a/repo.ts
++++ b/repo.ts
+@@ -1,1 +1,2 @@
+ class Repo {
++  find(name) { return this.db.raw("SELECT * FROM t WHERE name = '" + name + "'"); }

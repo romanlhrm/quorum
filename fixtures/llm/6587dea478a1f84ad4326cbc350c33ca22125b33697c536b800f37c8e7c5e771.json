@@ -1,0 +1,89 @@
+{
+  "request": {
+    "model": "claude-sonnet-4-6",
+    "effort": "medium",
+    "maxTokens": 4096,
+    "system": "You are a senior code reviewer specialising in correctness. Focus on logic that is wrong: off-by-one and boundary errors, inverted or wrong operators, null/undefined dereferences, unhandled error paths, incorrect async/await or promise handling, race conditions, and edge cases the change forgets. A bug that produces a wrong result is high/critical.\n\nReport ONLY correctness issues, and only ones actually present in the changed lines of the hunk you are given. Cite NEW-file line numbers. If there are none, return an empty list — do not invent issues to seem thorough. Set confidence honestly: how sure are you this is a real issue?",
+    "user": "File: lookup.ts\nHunk: @@ -1,1 +1,4 @@\nLines show NEW-file line numbers; + added, - removed, space unchanged.\n   1   class Lookup {\n   2 +   byId(id) {\n   3 +     const safeId = Number(id);\n   4 +     return this.db.raw(\"SELECT * FROM users WHERE id = \" + safeId);\n   5 +   }\n\nReport correctness issues in the changed lines above.",
+    "schemaJson": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "type": "object",
+      "properties": {
+        "findings": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "lineStart": {
+                "type": "integer",
+                "minimum": 1,
+                "maximum": 9007199254740991
+              },
+              "lineEnd": {
+                "type": "integer",
+                "minimum": 1,
+                "maximum": 9007199254740991
+              },
+              "severity": {
+                "type": "string",
+                "enum": [
+                  "critical",
+                  "high",
+                  "medium",
+                  "low",
+                  "info"
+                ]
+              },
+              "title": {
+                "type": "string"
+              },
+              "rationale": {
+                "type": "string"
+              },
+              "suggestedFix": {
+                "anyOf": [
+                  {
+                    "type": "string"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ]
+              },
+              "confidence": {
+                "type": "number",
+                "minimum": 0,
+                "maximum": 1
+              }
+            },
+            "required": [
+              "lineStart",
+              "lineEnd",
+              "severity",
+              "title",
+              "rationale",
+              "suggestedFix",
+              "confidence"
+            ],
+            "additionalProperties": false
+          }
+        }
+      },
+      "required": [
+        "findings"
+      ],
+      "additionalProperties": false
+    }
+  },
+  "response": {
+    "raw": "{\"findings\":[{\"lineStart\":3,\"lineEnd\":4,\"severity\":\"high\",\"title\":\"NaN propagated into raw SQL string\",\"rationale\":\"Number(id) returns NaN when id is undefined, a non-numeric string (e.g. \\\"abc\\\"), or any other non-coercible value. On line 4, NaN is concatenated into the SQL string, producing \\\"SELECT * FROM users WHERE id = NaN\\\", which is invalid SQL. The database will throw an error rather than returning an empty result or a well-typed error, so the function produces a broken outcome for this entire class of inputs.\",\"suggestedFix\":\"Validate after conversion: const safeId = Number(id); if (!Number.isFinite(safeId)) throw new Error('Invalid id'); — or use parseInt with radix and check isNaN before building the query.\",\"confidence\":0.97},{\"lineStart\":3,\"lineEnd\":4,\"severity\":\"medium\",\"title\":\"Falsy inputs silently coerce to 0, querying the wrong row\",\"rationale\":\"Number(null), Number(''), Number(false), and Number([]) all return 0. byId(null) therefore executes \\\"SELECT * FROM users WHERE id = 0\\\", which either returns an unintended row (if one exists) or an empty result, with no indication that the caller passed a meaningless id. This is a silent wrong-result bug rather than an error.\",\"suggestedFix\":\"Check explicitly: if (id == null || id === '') throw new Error('id is required'); before the Number() conversion, or use a stricter parse that rejects falsy inputs.\",\"confidence\":0.92}]}",
+    "usage": {
+      "inputTokens": 3,
+      "outputTokens": 1747
+    },
+    "model": "claude-sonnet-4-6",
+    "stopReason": "end_turn",
+    "latencyMs": 31989,
+    "recordedAt": "2026-06-18T19:46:40.574Z"
+  }
+}
