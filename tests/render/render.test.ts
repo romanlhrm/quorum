@@ -71,3 +71,36 @@ describe("renderTraceSummary", () => {
     expect(out.split("\n").filter((l) => l.trim().length > 0).length).toBeGreaterThanOrEqual(2);
   });
 });
+
+describe("renderReportMarkdown groups the same issue seen by two concerns", () => {
+  const sqli = (id: string, concern: RawFinding["concern"], title: string): RawFinding => ({
+    ...finding(id, "critical", 11),
+    concern,
+    title,
+  });
+  const twoLens = aggregate({
+    runId: "run-dup",
+    diffSummary: { files: 1, hunks: 1 },
+    items: [
+      { finding: sqli("s1", "security", "SQL Injection via string concatenation"), verdict: verdict("s1", "upheld") },
+      { finding: sqli("s2", "correctness", "SQL injection via string concatenation"), verdict: verdict("s2", "upheld") },
+      { finding: { ...finding("n1", "high", 15), concern: "correctness", title: "Null dereference" }, verdict: verdict("n1", "upheld") },
+    ],
+    failedNodes: [],
+    cost: { inputTokens: 1, outputTokens: 1, usd: 0 },
+    latencyMs: 1,
+    tiering: {},
+    cfg: { confidenceThreshold: 0.6, voteFloor: 2 },
+  });
+  const md = renderReportMarkdown(twoLens);
+
+  test("pipeline still keeps both findings (each concern is a vote)", () => {
+    expect(twoLens.findings.length).toBe(3);
+  });
+
+  test("report shows the SQL injection once, naming both concerns", () => {
+    expect(md.match(/^### /gm)?.length).toBe(2);
+    expect(md).toContain("security + correctness");
+    expect(md).toContain("2 issues, from 3 kept findings");
+  });
+});

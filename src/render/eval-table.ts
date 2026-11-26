@@ -18,9 +18,13 @@ export function renderEvalTable(r: EvalResult): string {
   out.push(row("reviewers only (no verifier)", r.withoutVerifier));
   out.push(row("+ isolated verifier", r.withVerifier));
   out.push("");
+  const dp = r.withVerifier.precision - r.withoutVerifier.precision;
+  const dr = r.withVerifier.recall - r.withoutVerifier.recall;
+  const pLabel = dp > 0 ? "gain" : dp < 0 ? "loss" : "no change";
+  const rLabel = dr < 0 ? "cost" : dr > 0 ? "gain" : "no cost";
   out.push(
-    `**Verifier impact** — precision ${pct(r.withoutVerifier.precision)} → ${pct(r.withVerifier.precision)} (gain), ` +
-      `recall ${pct(r.withoutVerifier.recall)} → ${pct(r.withVerifier.recall)} (cost). Two axes, reported honestly.`,
+    `**Verifier impact:** precision ${pct(r.withoutVerifier.precision)} → ${pct(r.withVerifier.precision)} (${pLabel}), ` +
+      `recall ${pct(r.withoutVerifier.recall)} → ${pct(r.withVerifier.recall)} (${rLabel}).`,
   );
   out.push("");
   out.push("### Keep-threshold sensitivity", "");
